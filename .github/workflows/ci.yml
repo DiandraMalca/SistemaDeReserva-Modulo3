@@ -1,0 +1,35 @@
+name: CI Pipeline
+
+on:
+    pull_request:
+        branches: [main]
+
+    push:
+        branches: [main, develop]
+
+jobs:
+    quality-check:
+        runs-on: ubuntu-latest
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: npm
+
+            - name: Instalar dependencias
+              run: npm ci
+
+            - name: Verificar ESLint
+              run: npm run lint
+
+            - name: Verificar formato
+              run: npm run format:check
+
+            - name: Ejecutar tests
+              run: npm test
+
+            - name: Generar build
+              run: npm run build
