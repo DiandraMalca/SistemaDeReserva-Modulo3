@@ -98,3 +98,44 @@ export function resetBookingDatabase() {
     },
   ];
 }
+
+// In-memory array mock representing final bookings stored in the database
+let confirmedBookingsList = [];
+
+/**
+ * Processes and creates a new booking instance.
+ * @param {Object} bookingData - Object containing name, email, slot, and event details.
+ * @returns {Object} The complete persisted booking record.
+ * @throws {Error} If mandatory fields are missing or invalid.
+ */
+export function createBooking(bookingData) {
+  // Check for mandatory guest data (M04-RF04 / M04-RF05 integration)
+  if (!bookingData.guestName || bookingData.guestName.trim() === "") {
+    throw new Error("Guest name is mandatory to complete the booking.");
+  }
+
+  if (!bookingData.guestEmail || !bookingData.guestEmail.includes("@")) {
+    throw new Error("A valid guest email is required.");
+  }
+
+  if (!bookingData.startTime || !bookingData.endTime) {
+    throw new Error("Booking time boundaries must be specified.");
+  }
+
+  const newBooking = {
+    bookingId: `BK-${Math.floor(1000 + Math.random() * 9000)}`,
+    ...bookingData,
+    createdAt: new Date().toISOString(),
+    status: bookingData.status || "Pending",
+  };
+
+  confirmedBookingsList.push(newBooking);
+  return newBooking;
+}
+
+/**
+ * Helper to clear bookings between unit tests.
+ */
+export function resetConfirmedBookingsList() {
+  confirmedBookingsList = [];
+}
