@@ -139,3 +139,35 @@ export function createBooking(bookingData) {
 export function resetConfirmedBookingsList() {
   confirmedBookingsList = [];
 }
+
+/**
+ * Cancels an existing booking based on business constraints.
+ * @param {Object} booking - The booking object to cancel.
+ * @param {number} cancellationLimitHours - Deadline restriction (e.g., 24 hours before).
+ * @returns {Object} The updated booking instance.
+ * @throws {Error} If the booking is not active or if the cancellation deadline has expired.
+ */
+export function cancelBooking(booking, cancellationLimitHours = 24) {
+  // Rule 1: The booking must be currently active to be cancelled
+  if (booking.status === "Cancelled" || booking.status === "Completed") {
+    throw new Error("Only active or pending bookings can be cancelled.");
+  }
+
+  const now = new Date().getTime();
+  const appointmentTime = new Date(booking.startTime).getTime();
+  const hoursUntilAppointment = (appointmentTime - now) / (1000 * 60 * 60);
+
+  // Rule 2: Validation for deadline limits
+  if (hoursUntilAppointment < cancellationLimitHours) {
+    throw new Error(
+      "The cancellation deadline for this reservation has expired. Please contact the professional directly.",
+    );
+  }
+
+  // Success path
+  return {
+    ...booking,
+    status: "Cancelled",
+    cancelledAt: new Date().toISOString(),
+  };
+}
