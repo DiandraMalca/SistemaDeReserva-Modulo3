@@ -1,7 +1,4 @@
-import {
-  createEvent,
-  resetEventsDatabase,
-} from "../../services/eventService";
+import { createEvent, resetEventsDatabase } from "../../services/eventService";
 
 describe("M03 - Event duplicate validation", () => {
   beforeEach(() => {
