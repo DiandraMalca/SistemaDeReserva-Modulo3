@@ -122,6 +122,13 @@ export function createBooking(bookingData) {
     throw new Error("Booking time boundaries must be specified.");
   }
 
+  // Validate that the booking starts in the future
+  const now = new Date();
+  const start = new Date(bookingData.startTime);
+  if (start < now) {
+    throw new Error("Booking start time must be in the future.");
+  }
+
   const newBooking = {
     bookingId: `BK-${Math.floor(1000 + Math.random() * 9000)}`,
     ...bookingData,
