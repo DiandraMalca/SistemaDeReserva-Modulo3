@@ -112,7 +112,7 @@ describe("M04-RF07: Guest Booking Cancellation Unit Tests", () => {
     );
   });
 
-// Test 7: Custom cancellation limit (e.g., 48h) is respected over the default
+  // Test 7: Custom cancellation limit (e.g., 48h) is respected over the default
   test("should respect a custom cancellation limit and deny when the appointment falls inside it", () => {
     // Appointment 30 hours away: fine for the 24h default, but inside a 48h limit
     const midDate = new Date();
