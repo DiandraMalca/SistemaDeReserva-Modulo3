@@ -111,4 +111,66 @@ describe("M04-RF07: Guest Booking Cancellation Unit Tests", () => {
       "The cancellation deadline for this reservation has expired. Please contact the professional directly.",
     );
   });
+
+// Test 7: Custom cancellation limit (e.g., 48h) is respected over the default
+  test("should respect a custom cancellation limit and deny when the appointment falls inside it", () => {
+    // Appointment 30 hours away: fine for the 24h default, but inside a 48h limit
+    const midDate = new Date();
+    midDate.setHours(midDate.getHours() + 30);
+
+    const midBooking = {
+      bookingId: "BK-4848",
+      guestName: "Grace Hall",
+      status: "Confirmed",
+      startTime: midDate.toISOString(),
+    };
+
+    expect(() => {
+      cancelBooking(midBooking, 48);
+    }).toThrow(
+      "The cancellation deadline for this reservation has expired. Please contact the professional directly.",
+    );
+  });
+
+  // Test 8: A cancellation comfortably past the limit succeeds at the boundary
+  test("should allow cancellation when the appointment is just beyond the cancellation limit", () => {
+    // Appointment 25 hours away, just over the 24h limit
+    const boundaryDate = new Date();
+    boundaryDate.setHours(boundaryDate.getHours() + 25);
+
+    const boundaryBooking = {
+      bookingId: "BK-2500",
+      guestName: "Henry Ford",
+      status: "Confirmed",
+      startTime: boundaryDate.toISOString(),
+    };
+
+    const result = cancelBooking(boundaryBooking, 24);
+
+    expect(result.status).toBe("Cancelled");
+    expect(result).toHaveProperty("cancelledAt");
+  });
+
+  // Test 9: The original booking object must not be mutated and its data is preserved
+  test("should preserve the original booking data and not mutate the input object", () => {
+    const futureDate = new Date();
+    futureDate.setHours(futureDate.getHours() + 48);
+
+    const originalBooking = {
+      bookingId: "BK-3030",
+      guestName: "Ivy Wong",
+      status: "Confirmed",
+      startTime: futureDate.toISOString(),
+    };
+
+    const result = cancelBooking(originalBooking, 24);
+
+    // Returned record keeps the identifying data
+    expect(result.bookingId).toBe("BK-3030");
+    expect(result.guestName).toBe("Ivy Wong");
+
+    // The input object is left untouched (no in-place mutation)
+    expect(originalBooking.status).toBe("Confirmed");
+    expect(originalBooking).not.toHaveProperty("cancelledAt");
+  });
 });
