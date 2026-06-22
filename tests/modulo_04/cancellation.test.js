@@ -56,4 +56,59 @@ describe("M04-RF07: Guest Booking Cancellation Unit Tests", () => {
       cancelBooking(alreadyCancelledBooking, 24);
     }).toThrow("Only active or pending bookings can be cancelled.");
   });
+
+  // Test 4: Pending bookings are also eligible for cancellation
+  test("should successfully cancel a Pending booking within the permitted timeframe", () => {
+    const futureDate = new Date();
+    futureDate.setHours(futureDate.getHours() + 48);
+
+    const pendingBooking = {
+      bookingId: "BK-7777",
+      guestName: "Dana White",
+      status: "Pending",
+      startTime: futureDate.toISOString(),
+    };
+
+    const result = cancelBooking(pendingBooking, 24);
+
+    expect(result.status).toBe("Cancelled");
+    expect(result).toHaveProperty("cancelledAt");
+  });
+
+  // Test 5: Completed bookings cannot be cancelled
+  test("should throw an error when trying to cancel a booking that is already Completed", () => {
+    const pastDate = new Date();
+    pastDate.setHours(pastDate.getHours() + 72);
+
+    const completedBooking = {
+      bookingId: "BK-9999",
+      guestName: "Evan Lee",
+      status: "Completed", // Pre-condition not met
+      startTime: pastDate.toISOString(),
+    };
+
+    expect(() => {
+      cancelBooking(completedBooking, 24);
+    }).toThrow("Only active or pending bookings can be cancelled.");
+  });
+
+  // Test 6: The default cancellation limit (24h) applies when none is provided
+  test("should apply the default 24h deadline and deny cancellation when the limit argument is omitted", () => {
+    // Appointment only 10 hours away, under the default 24h limit
+    const soonDate = new Date();
+    soonDate.setHours(soonDate.getHours() + 10);
+
+    const soonBooking = {
+      bookingId: "BK-2024",
+      guestName: "Fiona Green",
+      status: "Confirmed",
+      startTime: soonDate.toISOString(),
+    };
+
+    expect(() => {
+      cancelBooking(soonBooking);
+    }).toThrow(
+      "The cancellation deadline for this reservation has expired. Please contact the professional directly.",
+    );
+  });
 });
